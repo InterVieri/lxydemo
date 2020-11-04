@@ -15,6 +15,11 @@ public class MysqlSqlUtil implements SQLUtil{
     }
 
     @Override
+    public String getCreateIndexSql(Map<String, String> params) {
+        return null;
+    }
+
+    @Override
     public String getAlertColumnSql(String key, Map<String, Map<String, String>> value) {
         return null;
     }

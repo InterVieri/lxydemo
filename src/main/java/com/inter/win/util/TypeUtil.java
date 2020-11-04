@@ -24,6 +24,7 @@ public class TypeUtil {
                 return "7";
             case "TEXT":
             case "CLOB":
+            case "LONGVARCHAR":
                 return "8";
             default:
                 return "1";
@@ -78,6 +79,13 @@ public class TypeUtil {
                 return "TEXT";
             default:
                 return "1";
+        }
+    }
+    public static int getDatabaseType(String url) {
+        if (url.contains("mysql")) {
+            return 1;
+        } else {
+            return 2;
         }
     }
 }

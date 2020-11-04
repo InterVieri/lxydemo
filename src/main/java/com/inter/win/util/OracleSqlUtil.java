@@ -74,6 +74,22 @@ public class OracleSqlUtil implements SQLUtil{
     }
 
     @Override
+    public String getCreateIndexSql(Map<String, String> params) {
+        Set<Map.Entry<String, String>> entries = params.entrySet();
+        String tableName = params.get("tableName");
+        String indexName = params.get("indexName");
+        String columnName = params.get("columnName");
+        String nonUnique = params.get("nonUnique");
+        String sql = "";
+        if ("0".equals(nonUnique)) {
+            sql = "ALTER TABLE " + tableName  + " ADD CHECK ( " + columnName + " IS NOT NULL);";
+        } else {
+            sql = "create index " + indexName + " on " + tableName + "(" + columnName + ");";
+        }
+        return sql;
+    }
+
+    @Override
     public String getAlertColumnSql(String key, Map<String, Map<String, String>> value) {
         StringBuilder alertSql = new StringBuilder();
         StringBuilder commentSql = new StringBuilder();

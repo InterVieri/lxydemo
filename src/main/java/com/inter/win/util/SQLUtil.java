@@ -8,5 +8,7 @@ public interface SQLUtil {
 
     String getAlertTableSql();
 
+    String getCreateIndexSql(Map<String, String> params);
+
     String getAlertColumnSql(String key, Map<String, Map<String, String>> value);
 }
