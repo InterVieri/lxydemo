@@ -1,5 +1,6 @@
 package com.inter.win.util;
 
+
 public class TypeUtil {
     public static String changeDbType(String dbType) {
         dbType = dbType.toUpperCase();
@@ -9,15 +10,13 @@ public class TypeUtil {
             case "CHAR":
                 return "1";
             case "DECIMAL":
-                return "4";
             case "NUMBER":
             case "INT":
             case "SMALLINT":
             case "TINYINT":
             case "INTEGER":
-                return "2";
             case "BIGINT":
-                return "6";
+                return "2";
             case "DATETIME":
             case "TIMESTAMP":
             case "DATE":
@@ -25,6 +24,7 @@ public class TypeUtil {
             case "TEXT":
             case "CLOB":
             case "LONGVARCHAR":
+            case "LONGTEXT":
                 return "8";
             default:
                 return "1";
@@ -87,5 +87,8 @@ public class TypeUtil {
         } else {
             return 2;
         }
+    }
+    public static String getAdapter(String type) {
+        return type.toLowerCase().equals("mysql") ? Constants.MYSQL_DRIVER : Constants.ORACLE_DRIVER;
     }
 }

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="../css/bootstrap.css"/>
+    <link rel="stylesheet" type="text/css" href="../css/bootstrap-responsive.css"/>
+    <link rel="stylesheet" type="text/css" href="../css/style.css"/>
+    <script type="text/javascript" src="../Js/jquery.js"></script>
+    <script type="text/javascript" src="../Js/bootstrap.js"></script>
+    <script type="text/javascript" src="../Js/ckform.js"></script>
+    <script type="text/javascript" src="../Js/common.js"></script>
+    <script type="text/javascript" src="../Js/session.js"></script>
+
+
+    <style type="text/css">
+        body {
+            padding-bottom: 40px;
+        }
+
+        .sidebar-nav {
+            padding: 9px 0;
+        }
+
+        @media (max-width: 980px) {
+            /* Enable use of floated navbar text */
+            .navbar-text.pull-right {
+                float: none;
+                padding-left: 5px;
+                padding-right: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+<form class="form-inline definewidth m20" action="index.html" method="get">
+    <button type="button" class="btn btn-success" id="addnew" >新增源地址</button>
+    <button type="button" class="btn btn-success" onclick="start()" >开始转换</button>
+    <button type="button" class="btn btn-success" onclick="goLog()" >日志</button>
+</form>
+<table class="table table-bordered table-hover definewidth m10" id="targetTable">
+    <thead>
+    <tr>
+        <th>目标url</th>
+        <th>用户名</th>
+        <th>密码</th>
+        <th>类型</th>
+    </tr>
+    </thead>
+    <tr>
+        <td>
+            <input type="text" name="targetUrl" id="targetUrl" class="abc input-default" placeholder="" value="">&nbsp;
+        </td>
+        <td>
+            <input type="text" name="targetUsername" id="targetUsername" class="abc input-default" placeholder=""
+                   value="">&nbsp;
+        </td>
+        <td>
+            <input type="text" name="targetPassword" id="targetPassword" class="abc input-default" placeholder=""
+                   value="">&nbsp;
+        </td>
+        <td>
+            <input type="radio" name="tar_rad" value="mysql" checked/> mysql
+            <br/>
+            <input type="radio" name="tar_rad" value="oracle"/> oracle
+        </td>
+    </tr>
+</table>
+<table class="table table-bordered table-hover definewidth m10" id="sourceTable">
+    <thead>
+    <tr>
+        <th>源url</th>
+        <th>用户名</th>
+        <th>密码</th>
+        <th>类型</th>
+    </tr>
+    </thead>
+    <tr>
+        <td>
+            <input type="text" name="sourceUrl" id="sourceUrl" class="abc input-default" placeholder="" value="">&nbsp;
+        </td>
+        <td>
+            <input type="text" name="sourceUsername" id="sourceUsername" class="abc input-default" placeholder=""
+                   value="">&nbsp;
+        </td>
+        <td>
+            <input type="text" name="sourcePassword" id="sourcePassword" class="abc input-default" placeholder=""
+                   value="">&nbsp;
+        </td>
+        <td>
+            <input type="radio" name="sour_rad" value="mysql" checked/> mysql
+            <br/>
+            <input type="radio" name="sour_rad" value="oracle"/> oracle
+        </td>
+    </tr>
+</table>
+
+</body>
+</html>
+<script>
+    $(function () {
+        $('#addnew').click(function (container) {
+            var table = $('#sourceTable');
+            var column = table.find("tbody").find("tr")[0];
+            var length = table.find("tbody").find("tr").length;
+            var html = column.innerHTML;
+            html = "<tr>" + html + "</tr>";
+            var reg = new RegExp("sour_rad","g");
+            html = html.replace(reg, "sour_rad" + length);
+            table.append(html);
+        })
+    });
+
+    function start() {
+        var sourceValues = [];
+        var sourceTable = $('#sourceTable');
+        var targetTable = $('#targetTable');
+        var sourceColumns = sourceTable.find("tbody").find("tr");
+        var targetColumns = targetTable.find("tbody").find("tr");
+        var $sourceUrl = $('#sourceUrl');
+        var tNodes = targetColumns[0].childNodes;
+        var tValues = [];
+        $.each(tNodes,function(a,b){
+            var value = b;
+            if (value.nodeName === 'TD') {
+                var c = value.children[0];
+                if (c.name.startsWith("tar_rad")) {
+                    var check = c.checked;
+                    tValues.push(check ? c.value : value.children[2].value);
+                } else {
+                    var cValue = c.value;
+                    tValues.push(cValue);
+                }
+            }
+        });
+        $.each(sourceColumns,function(a,b){
+            var values = b.childNodes;
+            var cValues = [];
+            $.each(values,function(a,b){
+                var value = b;
+                if (value.nodeName === 'TD') {
+                    var c = value.children[0];
+                    if (c.name.startsWith("tar_rad")) {
+                        var check = c.checked;
+                        cValues.push(check ? c.value : value.children[2].value);
+                    } else {
+                        var cValue = c.value;
+                        cValues.push(cValue);
+                    }
+                }
+            });
+            sourceValues.push(cValues);
+        });
+        var params = {
+            "sources": sourceValues,
+            "target": tValues,
+            "frontId": getUUID()
+        };
+        $.ajax({
+            type: "POST",
+            data: JSON.stringify(params),
+            contentType:'application/json',
+            dataType: "JSON",
+            async: true,
+            url: "http://localhost:1908/convert",
+            success: function(data) {
+
+            }
+    });
+        // goLog();
+    }
+    function goLog() {
+        window.location.href = "convert-log.html"
+    }
+    function del(id) {
+        if (confirm("确定要删除吗？")) {
+            var url = "index.html";
+            window.location.href = url;
+        }
+    }
+
+    var socket;
+
+    function getUUID() {
+        var key = $.session.get("front_id");
+        if (!key) {
+            var uuid = createUuid();
+            key = uuid;
+            $.session.set("front_id", uuid);
+        }
+        return key;
+    }
+
+    function createUuid() {
+        var s = [];
+        var hexDigits = "0123456789abcdef";
+        for (var i = 0; i < 36; i++) {
+            s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
+        }
+        s[14] = "4"; // bits 12-15 of the time_hi_and_version field to 0010
+        s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1); // bits 6-7 of the clock_seq_hi_and_reserved to 01
+        s[8] = s[13] = s[18] = s[23] = "-";
+
+        var uuid = s.join("");
+        return uuid;
+    }
+
+    if(!window.WebSocket){
+
+        window.WebSocket = window.MozWebSocket;
+    }
+
+    if(window.WebSocket){
+        socket = new WebSocket("ws://localhost:17081/websocket");
+        socket.onmessage = function(event){
+
+        };
+        socket.onopen = function(event){
+            var uuid = getUUID();
+            send("front_id:" + uuid);
+        };
+
+        socket.onclose = function(event){
+
+        };
+    }else{
+        alert("您的浏览器不支持WebSocket协议！");
+    }
+
+    function send(message){
+        if(!window.WebSocket){return;}
+        if(socket.readyState === WebSocket.OPEN){
+            socket.send(message);
+        }else{
+            alert("WebSocket 连接没有建立成功！");
+        }
+    }
+
+</script>

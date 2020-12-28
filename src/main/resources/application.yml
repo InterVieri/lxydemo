@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: super-convert-man #应用名称
+  resources:
+    static-locations: classpath:static/
+server:
+  port: 1908

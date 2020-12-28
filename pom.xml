@@ -9,16 +9,24 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.inter.win</groupId>
-    <artifactId>lxydemo</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-    <name>lxydemo</name>
-    <description>Demo project for Spring Boot</description>
+    <artifactId>SuperConvertMan</artifactId>
+    <version>Handanovic</version>
+    <name>SuperConvertMan</name>
+    <description>lulalalulalalulalulalei</description>
 
     <properties>
         <java.version>1.8</java.version>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
@@ -37,6 +45,29 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+        <!--netty的依赖集合，都整合在一个依赖里面了-->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+            <version>4.1.6.Final</version>
+        </dependency>
+        <!--这里使用jackson反序列字节码-->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.11.0</version>
+        </dependency>
+        <!--加入log4j 便于深入学习整合运行过程的一些细节-->
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.17</version>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.ehcache</groupId>
+            <artifactId>ehcache</artifactId>
+            <version>2.10.5</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

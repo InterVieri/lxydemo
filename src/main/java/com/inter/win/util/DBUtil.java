@@ -20,7 +20,7 @@ public class DBUtil {
 	    关系：PreparedStatement继承自Statement,都是接口
 	    区别：PreparedStatement可以使用占位符，是预编译的，批处理比Statement效率高  
 	 */
-	public static Connection conn(String driver, String url, String user, String password) {
+		public static Connection conn(String driver, String url, String user, String password) {
 		Connection conn = null;
 		// 1.加载驱动程序
 		try {
