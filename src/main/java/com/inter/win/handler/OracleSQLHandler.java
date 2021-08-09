@@ -31,7 +31,7 @@ public class OracleSQLHandler implements SQLHandler {
                 valueType = valueMap.get("valueType");
                 length = valueMap.get("length");
                 dbType = TypeUtil.getDbType(valueType, Constants.ORACLE_DRIVER);
-                if (!StringUtils.isEmpty(valueMap.get("null")) && "Y".equals(valueMap.get("null"))) {
+                if (!StringUtils.isEmpty(valueMap.get("null")) && "NO".equals(valueMap.get("null"))) {
                     notNull = "not null";
                 }
                 // 拼接comment

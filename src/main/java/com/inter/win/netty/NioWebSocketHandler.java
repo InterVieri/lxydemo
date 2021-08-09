@@ -3,10 +3,7 @@ package com.inter.win.netty;
 import com.inter.win.cache.CacheUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.*;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -16,6 +13,7 @@ import io.netty.util.CharsetUtil;
 import lombok.extern.slf4j.Slf4j;
 
 
+import java.net.SocketAddress;
 import java.util.Date;
 
 import static io.netty.handler.codec.http.HttpUtil.isKeepAlive;
@@ -28,7 +26,7 @@ public class NioWebSocketHandler extends SimpleChannelInboundHandler<Object> {
  
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
-        log.info("收到消息："+msg);
+        log.info("收到消息：" + msg);
         if (msg instanceof FullHttpRequest){
             //以http请求形式接入，但是走的是websocket
                 handleHttpRequest(ctx, (FullHttpRequest) msg);
@@ -41,14 +39,17 @@ public class NioWebSocketHandler extends SimpleChannelInboundHandler<Object> {
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         //添加连接
-        log.info("客户端加入连接："+ctx.channel());
+        log.info("客户端加入连接：" + ctx.channel());
+        log.info("客户端地址：" + ctx.channel().remoteAddress());
         ChannelSupervise.addChannel(ctx.channel());
     }
  
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         //断开连接
-        log.info("客户端断开连接："+ctx.channel());
+        log.info("客户端断开连接：" + ctx.channel());
+        log.info("客户端地址：" + ctx.channel().remoteAddress());
+        log.info("客户端地址：" + ctx.channel().localAddress());
         ChannelSupervise.removeChannel(ctx.channel());
     }
  
@@ -74,6 +75,7 @@ public class NioWebSocketHandler extends SimpleChannelInboundHandler<Object> {
             throw new UnsupportedOperationException(String.format(
                     "%s frame types not supported", frame.getClass().getName()));
         }
+
         // 返回应答消息
         String request = ((TextWebSocketFrame) frame).text();
         log.info("服务端收到：" + request);
@@ -83,12 +85,10 @@ public class NioWebSocketHandler extends SimpleChannelInboundHandler<Object> {
         // 存入缓存
         if (request.startsWith("front_id")) {
             String[] arr = request.split(":");
-            CacheUtil.put(arr[1], s + ctx.channel().id() + "：" + request);
+            CacheUtil.put(arr[1], ctx.channel());
         }
         // 群发
         ChannelSupervise.send2All(tws);
-        // 返回【谁发的发给谁】
-        // ctx.channel().writeAndFlush(tws);
     }
     /**
      * 唯一的一次http请求，用于创建websocket
@@ -130,5 +130,11 @@ public class NioWebSocketHandler extends SimpleChannelInboundHandler<Object> {
         if (!isKeepAlive(req) || res.status().code() != 200) {
             f.addListener(ChannelFutureListener.CLOSE);
         }
+    }
+    private static String getAddr(Channel channel) {
+        SocketAddress address = channel.remoteAddress();
+        String addStr = address.toString();
+        String[] arr = addStr.split(":");
+        return arr[0];
     }
 }

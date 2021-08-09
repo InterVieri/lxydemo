@@ -11,8 +11,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class ChannelSupervise {
-    private   static ChannelGroup GlobalGroup=new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
-    private  static ConcurrentMap<String, ChannelId> ChannelMap=new ConcurrentHashMap();
+    private static ChannelGroup GlobalGroup = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
+    private static ConcurrentMap<String, ChannelId> ChannelMap = new ConcurrentHashMap();
     public  static void addChannel(Channel channel){
         GlobalGroup.add(channel);
         ChannelMap.put(channel.id().asShortText(),channel.id());
@@ -26,5 +26,10 @@ public class ChannelSupervise {
     }
     public static void send2All(TextWebSocketFrame tws){
         GlobalGroup.writeAndFlush(tws);
+    }
+
+    public static void send2Channel(Channel channel,String text){
+        TextWebSocketFrame tws = new TextWebSocketFrame("content" + text);
+        channel.writeAndFlush(tws);
     }
 }

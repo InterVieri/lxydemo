@@ -1,7 +1,6 @@
 package com.inter.win.collecter;
 
 
-import com.inter.win.util.DBUtil;
 import com.inter.win.util.TypeUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

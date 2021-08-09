@@ -3,8 +3,10 @@ package com.inter.win.comparator;
 import com.inter.win.collecter.TableCollecter;
 import com.inter.win.handler.SQLHandler;
 import com.inter.win.handler.SQLHandlerFactory;
+import com.inter.win.netty.ChannelSupervise;
 import com.inter.win.util.DBUtil;
 import com.inter.win.util.TypeUtil;
+import io.netty.channel.Channel;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -44,7 +46,8 @@ public class Comparator {
         sourceTables.removeAll(targetTables);
         return sourceTables;
     }
-    public List<List<String>> compareColumns(Map<String, List<Map<String, Map<String, String>>>> targetConnColumenMap, Map<String, List<Map<String, Map<String, String>>>> sourceConnColumenMap, String targetDatabaseDriver) {
+    public List<List<String>> compareColumns(Channel channel, Map<String, List<Map<String, Map<String, String>>>> targetConnColumenMap, Map<String, List<Map<String, Map<String, String>>>> sourceConnColumenMap, String targetDatabaseDriver) {
+        ChannelSupervise.send2Channel(channel, "准备进行数据比对");
         SQLHandler sqlUtil = SQLHandlerFactory.getInstance(targetDatabaseDriver);
         List<List<String>> allList = new ArrayList<>();
         List<String> tableList = new ArrayList<>();
@@ -62,6 +65,7 @@ public class Comparator {
                     for (Map.Entry<String, Map<String, String>> sColValueMapEntry : sColValueMapEntries) {
                         List<Map<String, Map<String, String>>> collect = tValue.stream().filter(u -> u.containsKey(sColValueMapEntry.getKey())).collect(Collectors.toList());
                         if (collect.isEmpty()) {
+                            ChannelSupervise.send2Channel(channel, "目标库表" + entry.getKey() + "缺少字段" + sColValueMapEntry.getKey());
                             columnList.add("目标库表" + entry.getKey() + "缺少字段" + sColValueMapEntry.getKey());
                             String alertSql = sqlUtil.getAlertColumnSql(entry.getKey(), sColValueMap);
                             columnSqlList.add(alertSql);
@@ -73,6 +77,7 @@ public class Comparator {
                             String valueType1 = value1.get("valueType");
                             String valueType2 = value2.get("valueType");
                             if (!valueType1.toUpperCase().equals(valueType2.toUpperCase())) {
+                                ChannelSupervise.send2Channel(channel,"目标库表" + entry.getKey() + "字段" + dbType1 + sColValueMapEntry.getKey() + "数据格式不一致！" + dbType2);
                                 typeList.add("目标库表" + entry.getKey() + "字段" + dbType1 + sColValueMapEntry.getKey() + "数据格式不一致！" + dbType2);
                                 String alertColumnSql = sqlUtil.getChangeTypeSql(entry.getKey(), sColValueMap);
                                 columnSqlList.add(alertColumnSql);
@@ -81,6 +86,7 @@ public class Comparator {
                     }
                 }
             } else {
+                ChannelSupervise.send2Channel(channel,"目标库缺少表" + entry.getKey());
                 tableList.add("目标库缺少表" + entry.getKey());
                 List<Map<String, Map<String, String>>> value = entry.getValue();
                 String createSql = sqlUtil.getCreateSql(entry.getKey(), value);

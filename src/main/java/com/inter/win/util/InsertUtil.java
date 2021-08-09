@@ -10,7 +10,7 @@ public class InsertUtil {
     public static void main(String[] args) throws SQLException {
         String[] sourceConn = {"oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@172.16.60.22:1521:orcl", "dataman_test", "dataman_test"};
         List<String> sqls = new ArrayList<>();
-        for (int i = 0; i < 10000; i++) {
+        for (int i = 3000; i < 20000; i++) {
             String sql = "CREATE TABLE DATAMAN_TEST_" + i + "(ID VARCHAR2(32 BYTE) NOT NULL ," +
                     "TEST_COLUMN1 VARCHAR2(32 BYTE) NULL , " +
                     "TEST_COLUMN2 VARCHAR2(32 BYTE) NULL , " +
@@ -33,16 +33,17 @@ public class InsertUtil {
             String commonSql8 = "COMMENT ON COLUMN DATAMAN_TEST_" + i + ".TEST_COLUMN8 IS '测试8'";
             String commonSql9 = "COMMENT ON COLUMN DATAMAN_TEST_" + i + ".TEST_COLUMN9 IS '测试9'";
             String commonSql10 = "COMMENT ON COLUMN DATAMAN_TEST_" + i + ".TEST_COLUMN10 IS '测试10'";
-//            sqls.add(commonSql1);
-//            sqls.add(commonSql2);
-//            sqls.add(commonSql3);
-//            sqls.add(commonSql4);
-//            sqls.add(commonSql5);
-//            sqls.add(commonSql6);
-//            sqls.add(commonSql7);
-//            sqls.add(commonSql8);
-//            sqls.add(commonSql9);
-//            sqls.add(commonSql10);
+            sqls.add(sql);
+            sqls.add(commonSql1);
+            sqls.add(commonSql2);
+            sqls.add(commonSql3);
+            sqls.add(commonSql4);
+            sqls.add(commonSql5);
+            sqls.add(commonSql6);
+            sqls.add(commonSql7);
+            sqls.add(commonSql8);
+            sqls.add(commonSql9);
+            sqls.add(commonSql10);
             String idSql = "ALTER TABLE DATAMAN_TEST_" + i + " ADD PRIMARY KEY (ID)";
             sqls.add(idSql);
 

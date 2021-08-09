@@ -1,11 +1,10 @@
 package com.inter.win.util;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * Java中使用JDBC连接数据库 
@@ -15,6 +14,13 @@ import java.sql.Statement;
  *
  */
 public class DBUtil {
+	public static void main(String[] args) throws SQLException {
+		List<String> list = new ArrayList<>();
+		Connection conn = conn("oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@172.16.60.22:1521:orcl", "dataman_sc", "dataman_sc");
+		DatabaseMetaData metaData = conn.getMetaData();
+		System.out.println(metaData.getUserName());
+
+	}
 	/**
 	 * Statement 和 PreparedStatement之间的关系和区别.
 	    关系：PreparedStatement继承自Statement,都是接口

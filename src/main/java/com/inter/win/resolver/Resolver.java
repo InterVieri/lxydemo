@@ -2,21 +2,21 @@ package com.inter.win.resolver;
 
 import com.inter.win.util.Constants;
 import com.inter.win.util.TypeUtil;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.sql.*;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 @Component
+@PropertySource(value = {"classpath:sql.properties"})
 public class Resolver {
-
+    @Value("${columns-sql.mysql}")
+    private String mysqlSql;
+    @Value("${columns-sql.oracle}")
+    private String oracleSql;
     public List<Map<String, String>> putIndexMap(Connection conn, ResultSet rs, String tableName, int database) throws SQLException {
         System.out.println("获取到表名称" + tableName);
         List<Map<String, String>> indexList = new ArrayList<>();
@@ -56,13 +56,14 @@ public class Resolver {
         String tableNamesStr = tableNamesBuilder.toString().substring(0, tableNamesBuilder.length() - 1);
         if (database == 1) {
             String schema = conn.getCatalog();
-            sql = "SELECT distinct CHARACTER_MAXIMUM_LENGTH,TABLE_NAME,NUMERIC_PRECISION,COLUMN_NAME,DATA_TYPE AS TYPE_NAME,COLUMN_COMMENT AS COMMENTS,IS_NULLABLE AS NULLABLE,COLUMN_KEY FROM information_schema.columns WHERE TABLE_NAME in (" + tableNamesStr + ") AND TABLE_SCHEMA = '" + schema + "'";
+            sql = mysqlSql;
+            sql = sql.replace("%tables%", tableNamesStr);
+            sql = sql.replace("%schema%", schema);
         } else {
-            sql = "select distinct t.DATA_LENGTH,t.TABLE_NAME,t.column_name,t.data_type AS TYPE_NAME,t.NULLABLE,uc.comments,uc.comments AS COMMENTS,pk_table.KEY_NAME AS COLUMN_KEY from all_tab_columns t " +
-                    "LEFT JOIN user_col_comments uc ON t.COLUMN_NAME = uc.COLUMN_NAME " +
-                    "LEFT JOIN (select cu.COLUMN_NAME AS KEY_NAME from user_cons_columns cu, user_constraints au where cu.constraint_name = au.constraint_name and au.constraint_type = 'P' and au.table_name in (" + tableNamesStr + ")" +
-                    ")pk_table ON t.COLUMN_NAME = pk_table.KEY_NAME " +
-                    "where t.table_name in (" + tableNamesStr + ") AND uc.table_name in (" + tableNamesStr + ")";
+            DatabaseMetaData metaData = conn.getMetaData();
+            sql = oracleSql;
+            sql = sql.replace("%tables%", tableNamesStr);
+            sql = sql.replace("%owner%", metaData.getUserName());
         }
         PreparedStatement stmt = conn.prepareStatement(sql);
         rs = stmt.executeQuery(sql);
@@ -95,7 +96,11 @@ public class Resolver {
                     length = rs.getString("NUMERIC_PRECISION");
                 }
             } else {
-                length = rs.getString("DATA_LENGTH");
+                if (dbType.toUpperCase().equals("NUMBER")) {
+                    length = rs.getString("DATA_PRECISION") + "," + rs.getString("DATA_SCALE");
+                } else {
+                    length = rs.getString("DATA_LENGTH");
+                }
             }
             map.put("length", length);
             map.put("dbType", dbType);
@@ -106,5 +111,12 @@ public class Resolver {
             list.add(tMap);
             targetConnColumenMap.put(tableName, list);
         }
+    }
+
+    public static void main(String[] args) {
+        String sql = "SELECT DISTINCT U.DATA_LENGTH,U.TABLE_NAME,U.column_name,U.DATA_TYPE AS TYPE_NAME,U.NULLABLE,pk_table.KEY_NAME AS COLUMN_KEY,t.COMMENTS FROM ALL_COL_COMMENTS t, ALL_TAB_COLS U LEFT JOIN (SELECT cu.COLUMN_NAME AS KEY_NAME FROM user_cons_columns cu, user_constraints au WHERE cu.constraint_name = au.constraint_name AND au.OWNER = ''%owner%''AND au.constraint_type = 'P' AND au.TABLE_NAME IN (%tables%)) pk_table ON U.COLUMN_NAME = pk_table.KEY_NAME WHERE t.TABLE_NAME = U.TABLE_NAME AND t.COLUMN_NAME = U.QUALIFIED_COL_NAME AND U.OWNER = t.OWNER AND U.OWNER = '%owner%' AND U.TABLE_NAME IN (%tables%)";
+        sql = sql.replace("%tables%", "aaa");
+        sql = sql.replace("%owner%", "bbb");
+        System.out.println(sql);
     }
 }

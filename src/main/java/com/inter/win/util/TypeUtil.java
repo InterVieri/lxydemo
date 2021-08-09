@@ -91,4 +91,14 @@ public class TypeUtil {
     public static String getAdapter(String type) {
         return type.toLowerCase().equals("mysql") ? Constants.MYSQL_DRIVER : Constants.ORACLE_DRIVER;
     }
+
+    public static String convertOracleNumberType2Mysql(String length) {
+        String[] arr = length.split(",");
+        if ("0".equals(arr[1])) {
+            return "INT";
+        } else {
+            return "DOUBLE";
+        }
+
+    }
 }
